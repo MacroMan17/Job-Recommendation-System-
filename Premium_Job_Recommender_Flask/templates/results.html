@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}CareerNavi Pro — Results{% endblock %}
+
+{% block content %}
+<div class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="{{ url_for('home') }}">
+      <div class="logo"><span>J</span></div>
+      <div>CareerNavi <span style="color:var(--primary)">Pro</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('companies') }}">Companies</a>
+      <a href="{{ url_for('analysis') }}">Insights</a>
+
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="toast {{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="container">
+
+  <div class="card card-pad">
+    <h2>Recommended Jobs</h2>
+    <p>Based on your skills: <b>{{ skills }}</b></p>
+    <a class="btn ghost" href="{{ url_for('dashboard') }}">New Search</a>
+  </div>
+
+  <div class="job-cards-container">
+    {% for job in results %}
+    <div class="job-card">
+
+      <div class="job-header">
+        <h3>{{ job.title }}</h3>
+        <p>{{ job.company }}</p>
+        <span>{{ job.location }}</span>
+      </div>
+
+      {% if job.description %}
+      <p>{{ job.description[:150] }}...</p>
+      {% endif %}
+
+      <div class="job-actions">
+
+        {% if current_user.is_authenticated %}
+
+          {% if job.apply_link %}
+          <form method="POST" action="{{ url_for('apply_job') }}">
+            <input type="hidden" name="job_title" value="{{ job.title }}">
+            <input type="hidden" name="company" value="{{ job.company }}">
+            <input type="hidden" name="apply_link" value="{{ job.apply_link }}">
+            <button type="submit" class="action-btn primary">
+              Apply Now
+            </button>
+          </form>
+          {% else %}
+          <button class="action-btn primary" disabled>
+            Apply Unavailable
+          </button>
+          {% endif %}
+
+        {% else %}
+          <a class="action-btn primary" href="{{ url_for('login') }}">
+            Login to Apply
+          </a>
+        {% endif %}
+
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
